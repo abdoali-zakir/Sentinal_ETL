@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from app.config import settings
-from app.routers import upload, validate
+from app.routers import repair, upload, validate
 
 app = FastAPI(title="Sentinel API")
 
@@ -17,6 +17,7 @@ app.add_middleware(
 
 app.include_router(upload.router, prefix="/api/datasets", tags=["datasets"])
 app.include_router(validate.router, prefix="/api/datasets", tags=["datasets"])
+app.include_router(repair.router, prefix="/api/datasets", tags=["datasets"])
 
 
 @app.get("/")

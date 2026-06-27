@@ -169,6 +169,17 @@ def _validation_result_to_dict(
     }
 
 
+def validation_has_failing_checks(validation_response: dict) -> bool:
+    """Return True when any validation check failed."""
+    return not (
+        validation_response.get("null_check_passed", True)
+        and validation_response.get("type_check_passed", True)
+        and validation_response.get("duplicate_check_passed", True)
+        and not validation_response.get("schema_drift_detected", False)
+        and validation_response.get("date_format_passed", True)
+    )
+
+
 async def run_validation(
     db: AsyncSession,
     dataset_id: uuid.UUID,

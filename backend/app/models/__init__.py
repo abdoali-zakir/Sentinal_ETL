@@ -32,6 +32,14 @@ class PipelineRunStatus(str, enum.Enum):
     failed = "failed"
 
 
+class RepairActionType(str, enum.Enum):
+    type_conversion = "type_conversion"
+    duplicate_removal = "duplicate_removal"
+    null_fill = "null_fill"
+    column_mapping = "column_mapping"
+    schema_normalization = "schema_normalization"
+
+
 class Dataset(Base):
     __tablename__ = "datasets"
 
@@ -137,6 +145,57 @@ class ValidationResult(Base):
     date_format_passed: Mapped[bool] = mapped_column(Boolean)
     date_format_report: Mapped[dict] = mapped_column(JSON)
     quality_score: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+
+class RepairAction(Base):
+    __tablename__ = "repair_actions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    dataset_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("dataset_versions.id"),
+    )
+    action_type: Mapped[RepairActionType] = mapped_column(
+        Enum(
+            RepairActionType,
+            name="repair_action_type",
+            native_enum=False,
+        ),
+    )
+    target_column: Mapped[str | None] = mapped_column(Text, nullable=True)
+    before_value_sample: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    after_value_sample: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    rows_affected: Mapped[int] = mapped_column(Integer)
+    success: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+
+class AuditLogEntry(Base):
+    __tablename__ = "audit_log_entries"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    dataset_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("dataset_versions.id"),
+    )
+    event_type: Mapped[str] = mapped_column(Text)
+    actor: Mapped[str] = mapped_column(Text)
+    details: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

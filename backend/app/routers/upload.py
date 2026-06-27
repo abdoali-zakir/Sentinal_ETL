@@ -17,7 +17,8 @@ from app.models import (
     PipelineRunStatus,
     PipelineStage,
 )
-from app.services.validation_service import run_validation
+from app.services.repair_service import run_repair
+from app.services.validation_service import run_validation, validation_has_failing_checks
 
 router = APIRouter()
 
@@ -188,7 +189,23 @@ async def upload_dataset(
             detail=f"Upload succeeded but validation failed: {exc}",
         ) from exc
 
-    return {
+    response: dict = {
         **upload_response,
         "validation": validation_response,
     }
+
+    if validation_has_failing_checks(validation_response):
+        try:
+            repair_response = await run_repair(
+                db,
+                dataset.id,
+                dataset_version.id,
+            )
+            response["repair"] = repair_response
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Upload and validation succeeded but repair failed: {exc}",
+            ) from exc
+
+    return response
