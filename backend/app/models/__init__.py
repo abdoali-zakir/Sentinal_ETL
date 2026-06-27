@@ -2,8 +2,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Text, func, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, Text, func, text
+from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -112,3 +112,32 @@ class PipelineRun(Base):
         nullable=True,
     )
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class ValidationResult(Base):
+    __tablename__ = "validation_results"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    dataset_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("dataset_versions.id"),
+    )
+    null_check_passed: Mapped[bool] = mapped_column(Boolean)
+    null_report: Mapped[dict] = mapped_column(JSON)
+    type_check_passed: Mapped[bool] = mapped_column(Boolean)
+    type_report: Mapped[dict] = mapped_column(JSON)
+    duplicate_check_passed: Mapped[bool] = mapped_column(Boolean)
+    duplicate_count: Mapped[int] = mapped_column(Integer)
+    schema_drift_detected: Mapped[bool] = mapped_column(Boolean)
+    schema_drift_report: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    date_format_passed: Mapped[bool] = mapped_column(Boolean)
+    date_format_report: Mapped[dict] = mapped_column(JSON)
+    quality_score: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
