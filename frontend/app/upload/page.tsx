@@ -49,15 +49,15 @@ type UploadResult = {
 };
 
 function qualityScoreColor(score: number): string {
-  if (score >= 80) return "text-green-600";
-  if (score >= 50) return "text-yellow-600";
+  if (score >= 85) return "text-green-600";
+  if (score >= 60) return "text-amber-500";
   return "text-red-600";
 }
 
-function qualityScoreRing(score: number): string {
-  if (score >= 80) return "border-green-200 bg-green-50";
-  if (score >= 50) return "border-yellow-200 bg-yellow-50";
-  return "border-red-200 bg-red-50";
+function qualityScoreAccent(score: number): string {
+  if (score >= 85) return "accent-green";
+  if (score >= 60) return "border-l-amber-400";
+  return "accent-red";
 }
 
 function allValidationPassed(validation: ValidationResult): boolean {
@@ -87,45 +87,55 @@ function ValidationResultsSection({
   const driftReport = validation.schema_drift_report;
 
   return (
-    <div className="mt-6 border-t border-gray-200 pt-6">
-      <h3 className="mb-4 text-sm font-medium text-gray-700">
+    <div className="mt-8 border-t border-black/5 pt-8">
+      <h3 className="mb-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-muted">
         Validation Results
       </h3>
 
       <div
-        className={`mb-4 flex items-center gap-4 rounded-lg border px-5 py-4 ${qualityScoreRing(score)}`}
+        className={`card-accent ${qualityScoreAccent(score)} mb-5 flex items-center gap-5 px-6 py-5`}
+        style={{ borderLeftWidth: "4px" }}
+        data-testid="quality-score-card"
       >
         <span
-          className={`text-4xl font-bold tabular-nums ${qualityScoreColor(score)}`}
+          className={`font-data text-[32px] font-bold leading-none ${qualityScoreColor(score)}`}
+          data-testid="quality-score-value"
         >
           {score}
         </span>
         <div>
-          <p className="text-sm font-medium text-gray-900">Quality Score</p>
-          <p className="text-xs text-gray-500">Out of 100</p>
+          <p className="text-sm font-semibold text-ink">Quality Score</p>
+          <p className="font-data text-xs text-slate-muted">out of 100</p>
         </div>
       </div>
 
       {passed ? (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+        <div
+          className="card-accent accent-green px-5 py-4 text-sm font-medium text-green-800"
+          data-testid="validation-passed"
+        >
           All validation checks passed
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="validation-issues">
           {validation.schema_drift_detected && driftReport && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              <p className="font-medium">Schema drift detected</p>
+            <div className="card-accent border-l-amber-400 px-5 py-4 text-sm text-amber-900">
+              <p className="font-semibold">Schema drift detected</p>
               <ul className="mt-2 space-y-1 text-xs">
                 {driftReport.added_columns.length > 0 && (
                   <li>
                     <span className="font-medium">Added:</span>{" "}
-                    {driftReport.added_columns.join(", ")}
+                    <span className="font-data">
+                      {driftReport.added_columns.join(", ")}
+                    </span>
                   </li>
                 )}
                 {driftReport.removed_columns.length > 0 && (
                   <li>
                     <span className="font-medium">Removed:</span>{" "}
-                    {driftReport.removed_columns.join(", ")}
+                    <span className="font-data">
+                      {driftReport.removed_columns.join(", ")}
+                    </span>
                   </li>
                 )}
                 {Object.keys(driftReport.type_changes).length > 0 && (
@@ -134,8 +144,8 @@ function ValidationResultsSection({
                     <ul className="mt-1 list-inside list-disc pl-1">
                       {Object.entries(driftReport.type_changes).map(
                         ([col, change]) => (
-                          <li key={col}>
-                            {col}: {change.previous} → {change.current}
+                          <li key={col} className="font-data">
+                            {col}: {change.previous} &rarr; {change.current}
                           </li>
                         ),
                       )}
@@ -147,26 +157,26 @@ function ValidationResultsSection({
           )}
 
           {nullColumns.length > 0 && (
-            <details className="rounded-lg border border-gray-200 bg-gray-50 text-sm">
-              <summary className="cursor-pointer px-4 py-3 font-medium text-gray-700">
+            <details className="card-accent accent-muted overflow-hidden text-sm">
+              <summary className="cursor-pointer select-none px-5 py-3.5 font-medium text-ink">
                 Null values ({nullColumns.length} column
                 {nullColumns.length !== 1 ? "s" : ""})
               </summary>
-              <div className="border-t border-gray-200 px-4 py-3">
+              <div className="border-t border-black/5 px-5 py-4">
                 <table className="min-w-full text-xs">
                   <thead>
-                    <tr className="text-left text-gray-500">
+                    <tr className="text-left text-slate-muted">
                       <th className="pb-2 pr-4 font-medium">Column</th>
                       <th className="pb-2 font-medium">Null count</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-black/5">
                     {nullColumns.map(([column, count]) => (
                       <tr key={column}>
-                        <td className="py-1.5 pr-4 font-medium text-gray-900">
+                        <td className="py-2 pr-4 font-data font-medium text-ink">
                           {column}
                         </td>
-                        <td className="py-1.5 tabular-nums text-gray-600">
+                        <td className="py-2 font-data text-slate-muted">
                           {count}
                         </td>
                       </tr>
@@ -178,43 +188,46 @@ function ValidationResultsSection({
           )}
 
           {validation.duplicate_count > 0 && (
-            <details className="rounded-lg border border-gray-200 bg-gray-50 text-sm">
-              <summary className="cursor-pointer px-4 py-3 font-medium text-gray-700">
+            <details className="card-accent accent-muted overflow-hidden text-sm">
+              <summary className="cursor-pointer select-none px-5 py-3.5 font-medium text-ink">
                 Duplicate rows
               </summary>
-              <div className="border-t border-gray-200 px-4 py-3 text-gray-600">
-                {validation.duplicate_count} duplicate row
+              <div className="border-t border-black/5 px-5 py-4 text-slate-muted">
+                <span className="font-data text-ink">
+                  {validation.duplicate_count}
+                </span>{" "}
+                duplicate row
                 {validation.duplicate_count !== 1 ? "s" : ""} found
               </div>
             </details>
           )}
 
           {!validation.date_format_passed && dateFormatColumns.length > 0 && (
-            <details className="rounded-lg border border-gray-200 bg-gray-50 text-sm">
-              <summary className="cursor-pointer px-4 py-3 font-medium text-gray-700">
+            <details className="card-accent accent-muted overflow-hidden text-sm">
+              <summary className="cursor-pointer select-none px-5 py-3.5 font-medium text-ink">
                 Date format ({dateFormatColumns.length} column
                 {dateFormatColumns.length !== 1 ? "s" : ""} with non-ISO8601
                 values)
               </summary>
-              <div className="border-t border-gray-200 px-4 py-3">
+              <div className="border-t border-black/5 px-5 py-4">
                 <table className="min-w-full text-xs">
                   <thead>
-                    <tr className="text-left text-gray-500">
+                    <tr className="text-left text-slate-muted">
                       <th className="pb-2 pr-4 font-medium">Column</th>
-                      <th className="pb-2 pr-4 font-medium">Non-ISO8601 count</th>
+                      <th className="pb-2 pr-4 font-medium">Non-ISO8601</th>
                       <th className="pb-2 font-medium">Examples</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-black/5">
                     {dateFormatColumns.map(([column, report]) => (
                       <tr key={column}>
-                        <td className="py-1.5 pr-4 font-medium text-gray-900">
+                        <td className="py-2 pr-4 font-data font-medium text-ink">
                           {column}
                         </td>
-                        <td className="py-1.5 pr-4 tabular-nums text-gray-600">
+                        <td className="py-2 pr-4 font-data text-slate-muted">
                           {report.non_iso8601_count}
                         </td>
-                        <td className="py-1.5 font-mono text-gray-600">
+                        <td className="py-2 font-data text-slate-muted">
                           {report.examples.join(", ")}
                         </td>
                       </tr>
@@ -334,17 +347,25 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8">
-      <h1 className="mb-2 text-2xl font-semibold">Upload Dataset</h1>
-      <p className="mb-8 text-sm text-gray-500">
-        Ingest a CSV or JSON file into the bronze layer.
-      </p>
+    <div className="mx-auto max-w-3xl px-6 py-12" data-testid="upload-page">
+      <header className="mb-10 animate-fade-up">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-bronze">
+          Bronze Ingestion
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          Upload Dataset
+        </h1>
+        <p className="mt-3 text-base text-slate-muted">
+          Ingest a CSV or JSON file into the Bronze layer. Sentinel validates
+          and auto-repairs on arrival.
+        </p>
+      </header>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 animate-fade-up" style={{ animationDelay: "0.05s" }}>
         <div>
           <label
             htmlFor="dataset-name"
-            className="mb-2 block text-sm font-medium text-gray-700"
+            className="mb-2 block text-sm font-medium text-ink"
           >
             Dataset name
           </label>
@@ -354,13 +375,14 @@ export default function UploadPage() {
             value={datasetName}
             onChange={(event) => setDatasetName(event.target.value)}
             placeholder="e.g. customer-orders"
-            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm shadow-sm focus:border-gray-400 focus:outline-none"
+            data-testid="dataset-name-input"
+            className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-ink shadow-card outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/25"
             disabled={isUploading}
           />
         </div>
 
         <div>
-          <span className="mb-2 block text-sm font-medium text-gray-700">
+          <span className="mb-2 block text-sm font-medium text-ink">
             Data file
           </span>
           <div
@@ -375,10 +397,11 @@ export default function UploadPage() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`cursor-pointer rounded-lg border-2 border-dashed bg-white p-10 text-center shadow-sm transition-colors ${
+            data-testid="dropzone"
+            className={`cursor-pointer rounded-xl border-2 border-dashed bg-white p-12 text-center shadow-card transition-colors ${
               isDragging
-                ? "border-bronze bg-bronze/5"
-                : "border-gray-200 hover:border-gray-300"
+                ? "border-bronze bg-bronze/[0.06]"
+                : "border-black/10 hover:border-bronze/50"
             }`}
           >
             <input
@@ -390,16 +413,34 @@ export default function UploadPage() {
                 handleFile(event.target.files?.[0] ?? null)
               }
             />
-            <p className="text-sm font-medium text-gray-700">
+            <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-bronze/10">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#A86B36"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 3v12" />
+                <path d="m7 8 5-5 5 5" />
+                <path d="M5 21h14" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-ink">
               Drag and drop a file here, or click to browse
             </p>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-1.5 font-data text-xs text-slate-muted">
               Accepted formats: .csv, .json
             </p>
             {selectedFile && (
-              <p className="mt-4 text-sm text-gray-600">
+              <p className="mt-4 text-sm text-slate-muted" data-testid="selected-file">
                 Selected:{" "}
-                <span className="font-medium">{selectedFile.name}</span>
+                <span className="font-data font-medium text-bronze">
+                  {selectedFile.name}
+                </span>
               </p>
             )}
           </div>
@@ -408,78 +449,95 @@ export default function UploadPage() {
         <button
           type="submit"
           disabled={isUploading}
-          className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+          data-testid="upload-submit"
+          className="inline-flex items-center gap-2 rounded-full bg-bronze px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-bronze/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isUploading && (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           )}
-          {isUploading ? "Uploading..." : "Upload to Bronze"}
+          {isUploading ? "Uploading\u2026" : "Upload to Bronze"}
         </button>
       </form>
 
       {error && (
         <div
           role="alert"
-          className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          data-testid="upload-error"
+          className="card-accent accent-red mt-6 px-5 py-4 text-sm text-red-700"
         >
           {error}
         </div>
       )}
 
       {result && (
-        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-3">
-            <h2 className="text-lg font-semibold">Upload successful</h2>
-            <span className="inline-flex items-center rounded-full bg-bronze/15 px-2.5 py-0.5 text-xs font-medium text-bronze">
-              Bronze Layer
+        <div
+          className="card mt-8 animate-fade-up p-7"
+          data-testid="upload-result"
+        >
+          <div className="mb-6 flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-ink">Upload successful</h2>
+            <span className="inline-flex items-center rounded-full bg-bronze/15 px-2.5 py-0.5 font-data text-[11px] font-semibold text-bronze">
+              promoted_bronze
             </span>
           </div>
 
-          <dl className="mb-6 grid gap-3 text-sm sm:grid-cols-2">
+          <dl className="mb-7 grid gap-5 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-gray-500">Dataset ID</dt>
-              <dd className="font-mono text-xs text-gray-900">
+              <dt className="mb-1 text-xs uppercase tracking-wide text-slate-muted">
+                Dataset ID
+              </dt>
+              <dd className="font-data text-xs text-ink" data-testid="result-dataset-id">
                 {result.dataset_id}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Version</dt>
-              <dd className="font-medium text-gray-900">
+              <dt className="mb-1 text-xs uppercase tracking-wide text-slate-muted">
+                Version
+              </dt>
+              <dd className="font-data text-sm font-semibold text-ink">
                 v{result.version_number}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Row count</dt>
-              <dd className="font-medium text-gray-900">{result.row_count}</dd>
+              <dt className="mb-1 text-xs uppercase tracking-wide text-slate-muted">
+                Row count
+              </dt>
+              <dd className="font-data text-sm font-semibold text-ink">
+                {result.row_count}
+              </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Column count</dt>
-              <dd className="font-medium text-gray-900">
+              <dt className="mb-1 text-xs uppercase tracking-wide text-slate-muted">
+                Column count
+              </dt>
+              <dd className="font-data text-sm font-semibold text-ink">
                 {result.column_count}
               </dd>
             </div>
           </dl>
 
-          <h3 className="mb-3 text-sm font-medium text-gray-700">Columns</h3>
-          <div className="overflow-hidden rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-muted">
+            Columns
+          </h3>
+          <div className="overflow-hidden rounded-xl border border-black/5">
+            <table className="min-w-full divide-y divide-black/5 text-sm">
+              <thead className="bg-paper">
                 <tr>
-                  <th className="px-4 py-2 text-left font-medium text-gray-500">
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-muted">
                     Name
                   </th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-500">
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-muted">
                     Dtype
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide-black/5 bg-white">
                 {result.columns.map((column) => (
-                  <tr key={column.name}>
-                    <td className="px-4 py-2 font-medium text-gray-900">
+                  <tr key={column.name} className="transition-colors hover:bg-paper/60">
+                    <td className="px-4 py-2.5 font-data font-medium text-ink">
                       {column.name}
                     </td>
-                    <td className="px-4 py-2 font-mono text-xs text-gray-600">
+                    <td className="px-4 py-2.5 font-data text-xs text-slate-muted">
                       {column.dtype}
                     </td>
                   </tr>
