@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { DragEvent, FormEvent, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 
@@ -37,6 +38,15 @@ type ValidationResult = {
   issues: string[];
 };
 
+type RepairResult = {
+  status: string;
+  repaired_path: string | null;
+  actions_taken: Record<string, unknown>[];
+  quality_score_before: number | null;
+  quality_score_after: number | null;
+  message?: string;
+};
+
 type UploadResult = {
   dataset_id: string;
   version_id: string;
@@ -46,6 +56,7 @@ type UploadResult = {
   columns: ColumnInfo[];
   bronze_path: string;
   validation?: ValidationResult;
+  repair?: RepairResult;
 };
 
 function qualityScoreColor(score: number): string {
@@ -225,6 +236,52 @@ function ValidationResultsSection({
             </details>
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+function RepairResultsSection({ repair }: { repair: RepairResult }) {
+  const before = repair.quality_score_before;
+  const after = repair.quality_score_after;
+  const actionCount = repair.actions_taken.length;
+
+  return (
+    <div className="mt-6 border-t border-gray-200 pt-6">
+      <h3 className="mb-4 text-sm font-medium text-gray-700">Repair Results</h3>
+
+      <div className="mb-4 grid gap-3 text-sm sm:grid-cols-3">
+        <div>
+          <dt className="text-gray-500">Status</dt>
+          <dd className="font-medium capitalize text-gray-900">{repair.status}</dd>
+        </div>
+        {before != null && after != null && (
+          <>
+            <div>
+              <dt className="text-gray-500">Score before</dt>
+              <dd className="font-medium tabular-nums text-gray-900">{before}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Score after</dt>
+              <dd className="font-medium tabular-nums text-gray-900">{after}</dd>
+            </div>
+          </>
+        )}
+      </div>
+
+      {repair.repaired_path && (
+        <p className="mb-3 font-mono text-xs text-gray-600">{repair.repaired_path}</p>
+      )}
+
+      {actionCount > 0 && (
+        <details className="rounded-lg border border-gray-200 bg-gray-50 text-sm">
+          <summary className="cursor-pointer px-4 py-3 font-medium text-gray-700">
+            Actions taken ({actionCount})
+          </summary>
+          <pre className="overflow-x-auto border-t border-gray-200 px-4 py-3 text-xs text-gray-800">
+            {JSON.stringify(repair.actions_taken, null, 2)}
+          </pre>
+        </details>
       )}
     </div>
   );
@@ -428,11 +485,17 @@ export default function UploadPage() {
 
       {result && (
         <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold">Upload successful</h2>
             <span className="inline-flex items-center rounded-full bg-bronze/15 px-2.5 py-0.5 text-xs font-medium text-bronze">
               Bronze Layer
             </span>
+            <Link
+              href={`/datasets/${result.dataset_id}/versions/${result.version_id}`}
+              className="ml-auto text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              View audit log →
+            </Link>
           </div>
 
           <dl className="mb-6 grid gap-3 text-sm sm:grid-cols-2">
@@ -491,6 +554,8 @@ export default function UploadPage() {
           {result.validation && (
             <ValidationResultsSection validation={result.validation} />
           )}
+
+          {result.repair && <RepairResultsSection repair={result.repair} />}
         </div>
       )}
     </div>

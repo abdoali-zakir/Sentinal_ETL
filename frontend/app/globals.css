@@ -3,25 +3,45 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #fafaf8;
+  --foreground: #14171a;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .font-data {
+    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo,
+      Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .tier-card {
+    @apply rounded-xl border-l-4 bg-white shadow-sm;
+  }
+
+  .tier-card-bronze {
+    @apply tier-card border-l-bronze;
+  }
+
+  .tier-card-silver {
+    @apply tier-card border-l-silver;
+  }
+
+  .tier-card-gold {
+    @apply tier-card border-l-gold;
+  }
+
+  .tier-card-slate-muted {
+    @apply tier-card border-l-slate-muted;
   }
 }
