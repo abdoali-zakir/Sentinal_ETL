@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { Navbar } from "@/components/Navbar";
+import NavBar from "@/components/NavBar";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Sentinel ETL",
-  description: "Sentinel ETL dashboard",
+  description: "Self-healing medallion data platform",
 };
 
 export default function RootLayout({
@@ -30,10 +30,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} min-h-screen font-sans text-foreground antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} min-h-screen bg-paper font-sans text-ink antialiased`}
       >
-        <Navbar />
-        <main className="bg-paper">{children}</main>
+        <NavBar />
+        <main>{children}</main>
       </body>
     </html>
   );

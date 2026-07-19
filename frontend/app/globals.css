@@ -5,22 +5,120 @@
 :root {
   --background: #fafaf8;
   --foreground: #14171a;
+  --ink: #14171a;
+  --paper: #fafaf8;
+  --bronze: #a86b36;
+  --silver: #b0b7bd;
+  --gold: #d4af37;
+  --slate-muted: #8a8f98;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(20, 23, 26, 0.018) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(212, 175, 55, 0.28);
+  color: var(--ink);
+}
+
+/* -------- data / mono type -------- */
+.font-data {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------- cards -------- */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(20, 23, 26, 0.05);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card-hoverable:hover {
+  box-shadow: 0 8px 24px rgba(20, 23, 26, 0.09);
+  transform: translateY(-2px);
+}
+
+.card-accent {
+  background: #ffffff;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(20, 23, 26, 0.05);
+  border-left-width: 4px;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.accent-bronze { border-left-color: var(--bronze); }
+.accent-silver { border-left-color: var(--silver); }
+.accent-gold   { border-left-color: var(--gold); }
+.accent-green  { border-left-color: #16a34a; }
+.accent-red    { border-left-color: #dc2626; }
+.accent-blue   { border-left-color: #2563eb; }
+.accent-muted  { border-left-color: var(--slate-muted); }
+
+/* -------- the signature 3-dot medallion motif -------- */
+.medallion-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.medallion-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  display: block;
+}
+.medallion-dots .d-bronze { background: var(--bronze); }
+.medallion-dots .d-silver { background: var(--silver); }
+.medallion-dots .d-gold {
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+}
+
+/* -------- nav underline -------- */
+.nav-link {
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.2s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 100%;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link.active::after,
+.nav-link:hover::after {
+  transform: scaleX(1);
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  .font-data {
-    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo,
-      Monaco, Consolas, monospace;
-    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -44,4 +142,17 @@ body {
   .tier-card-slate-muted {
     @apply tier-card border-l-slate-muted;
   }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(138, 143, 152, 0.4);
+  border-radius: 9999px;
+  border: 2px solid var(--paper);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(138, 143, 152, 0.65);
 }

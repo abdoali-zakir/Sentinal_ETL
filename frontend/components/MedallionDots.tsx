@@ -1,14 +1,15 @@
 /** Medallion tier signature — use only in the navbar and lineage visualization. */
 export function MedallionDots() {
   return (
-    <div
-      className="flex items-center gap-0.5"
+    <span
+      className="medallion-dots"
       aria-hidden="true"
       title="Bronze · Silver · Gold"
+      data-testid="medallion-dots"
     >
-      <span className="h-2 w-2 rounded-full bg-bronze" />
-      <span className="h-2 w-2 rounded-full bg-silver" />
-      <span className="h-2 w-2 rounded-full bg-gold" />
-    </div>
+      <span className="d-bronze" />
+      <span className="d-silver" />
+      <span className="d-gold" />
+    </span>
   );
 }
